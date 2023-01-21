@@ -8,12 +8,18 @@ import json
 from digi.xbee.devices import XBeeDevice
 import pkg_resources, os
 
-serial_port = "/dev/tty.usbserial-A21SPQED" # On MacOS
+serial_port = "COM11" # On MacOS
 baud_rate = 57600
 REMOTE_NODE_ID = "Router"
 
 device = XBeeDevice(serial_port, baud_rate)
 remote = None
+
+#CANUSB info
+serial_port_can = 'COM6' #rPi uses /dev/ttyUSB#
+#baud_rate_can = 57600 # or 9600 for the other one
+
+can_table_file =  os.path.join('resources', 'can_table.csv')
 
 def setup_xbee():
     global remote
@@ -85,7 +91,7 @@ class Row:
         return json.dumps(dict)
 
 # Set of CAN values to be sent to the base-station
-sendables = set(getTags('mc_tags.txt'))
+sendables = set(getTags('mppt_tags.txt'))
 
 # Dict mapping tags to indices into the row of CAN values
 tags_to_indices = {}
@@ -128,7 +134,7 @@ def construct_tags_to_indices(table_file: str):
         if key not in tags_to_indices:
             raise Exception("construct_tags_to_indices: tag in sendables not in table_file : " + str(key))
 
-def accumulator_worker(lock: threading.Lock):
+def accumulator_worker_from_file(lock: threading.Lock):
     """
     The worker for the accumulator thread, which reads from the CAN line and
     updates the row list.
@@ -136,6 +142,19 @@ def accumulator_worker(lock: threading.Lock):
     r = Receiver(serial_port='/dev/tty.usbserial-AC00QTXJ')
     for packet in r.get_packets_from_file('../example-data/collected_cleaned.txt'):
         time.sleep(0.01) # TODO: remove when getting data from serial
+        if packet['Tag'] in sendables:
+            with lock:
+                row.lst[tags_to_indices[packet['Tag']]].pass_value(packet['data'])
+
+
+def accumulator_worker(lock: threading.Lock):
+    """
+    The worker for the accumulator thread, which reads from the CAN line and
+    updates the row list.
+    """
+    r = Receiver(serial_port=serial_port_can)
+    for packet in r.get_packets():
+        # time.sleep(0.01) # TODO: remove when getting data from serial
         if packet['Tag'] in sendables:
             with lock:
                 row.lst[tags_to_indices[packet['Tag']]].pass_value(packet['data'])
@@ -165,14 +184,9 @@ def accumulator_worker(lock: threading.Lock):
 if __name__ == "__main__":
     # Initial setup
     construct_tags_to_indices(pkg_resources.resource_filename(
-        __name__,
-        os.path.join(os.pardir, 'src', 'resources', 'can_table.csv')
-    ))
-    print("1")
+        __name__, can_table_file))
     setup_xbee()
-    print("2")
     xbee_network = device.get_network()
-    print("3")
     remote = xbee_network.discover_device(REMOTE_NODE_ID)
     if remote is None:
         raise Exception("Coudn't connect to %s", remote.get_64bit_addr())
