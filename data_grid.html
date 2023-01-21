@@ -5,7 +5,7 @@
   <style>
     .grid-container {
       display: grid;
-      grid-template-columns: auto auto auto auto auto;
+      grid-template-columns: 300px 300px 300px 300px 300px;
       background-color: #666666;
       padding: 4px;
     }
@@ -49,15 +49,20 @@
 
   <script>
     async function myFunction() {
-      const response = await fetch('http://127.0.0.1:8000/messages', {
+      const response = await fetch('//http://127.0.0.1:8000/messages', {
       method: "GET",
       headers: {"Content-type": "application/json; charset=UTF-8"}
       })
-
+      
       const responseText = await response.text();
       console.log(responseText); // logs 'OK'
       document.getElementById("demo").innerHTML = (responseText);
+      setTimeout(myFunction, 1000);
+
+
     }
+
+
   </script>
 
 </body>
