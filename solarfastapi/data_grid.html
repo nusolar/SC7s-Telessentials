@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: auto auto auto auto auto;
+      background-color: #666666;
+      padding: 4px;
+    }
+
+    .grid-title {
+      background-color: #bfbfbf;
+      border: 2px solid #666666;
+      padding: 20px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .grid-item {
+      background-color: #f2f2f2;
+      border: 2px solid #666666;
+      padding: 20px;
+      font-size: 18px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="grid-container" ; style="height: 100px">
+    <div class="grid-title">Data 1</div>
+    <div class="grid-title">Data 2</div>
+    <div class="grid-title">Data 3</div>
+    <div class="grid-title">Data 4</div>
+    <div class="grid-title">Data 5</div>
+  </div>
+  <div class="grid-container" ; style="height: 200px">
+    <div class="grid-item">data</div>
+    <div class="grid-item">data</div>
+    <div class="grid-item">data</div>
+    <div class="grid-item">data</div>
+    <div class="grid-item" id="demo">data</div>
+  </div>
+
+  <button type="button" onclick="myFunction()">Click Me!</button>
+
+  <script>
+    async function myFunction() {
+      const response = await fetch('http://127.0.0.1:8000/messages', {
+      method: "GET",
+      headers: {"Content-type": "application/json; charset=UTF-8"}
+      })
+
+      const responseText = await response.text();
+      console.log(responseText); // logs 'OK'
+      document.getElementById("demo").innerHTML = (responseText);
+    }
+  </script>
+
+</body>
+
+</html>
