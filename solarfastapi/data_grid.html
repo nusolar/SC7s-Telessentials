@@ -5,7 +5,7 @@
   <style>
     .grid-container {
       display: grid;
-      grid-template-columns: auto auto auto auto auto;
+      grid-template-columns: 250px 250px 250px 250px 250px 250px;
       background-color: #666666;
       padding: 4px;
     }
@@ -31,18 +31,20 @@
 <body>
 
   <div class="grid-container" ; style="height: 100px">
-    <div class="grid-title">Data 1</div>
-    <div class="grid-title">Data 2</div>
-    <div class="grid-title">Data 3</div>
-    <div class="grid-title">Data 4</div>
-    <div class="grid-title">Data 5</div>
+    <div class="grid-title">Main Current</div>
+    <div class="grid-title">MPPT-1</div>
+    <div class="grid-title">MPPT-2</div>
+    <div class="grid-title">RPM</div>
+    <div class="grid-title">Lowest Voltage</div>
+    <div class="grid-title">Highest Temperature</div>
   </div>
   <div class="grid-container" ; style="height: 200px">
-    <div class="grid-item">data</div>
-    <div class="grid-item">data</div>
-    <div class="grid-item">data</div>
-    <div class="grid-item">data</div>
-    <div class="grid-item" id="demo">data</div>
+    <div class="grid-item" id="current">data</div>
+    <div class="grid-item" id="mppt1">data</div>
+    <div class="grid-item" id="mppt2">data</div>
+    <div class="grid-item"id="rpm">data</div>
+    <div class="grid-item" id="lowvolt">data</div>
+    <div class="grid-item" id="hightemp">data</div>
   </div>
 
   <button type="button" onclick="myFunction()">Click Me!</button>
@@ -53,11 +55,21 @@
       method: "GET",
       headers: {"Content-type": "application/json; charset=UTF-8"}
       })
+      
+      const responseJSON = await response.json();
+      console.log(JSON.stringify(responseJSON)); // logs 'OK'
+      document.getElementById("lowvolt").innerHTML = (responseJSON.at(-1)["lowest_voltage"]);
+      document.getElementById("rpm").innerHTML = (responseJSON.at(-1)["rpm"]);
+      document.getElementById("mppt2").innerHTML = (responseJSON.at(-1)["mppt2"]);
+      document.getElementById("mppt1").innerHTML = (responseJSON.at(-1)["mppt1"]);
+      document.getElementById("current").innerHTML = (responseJSON.at(-1)["main_current"]);
+      document.getElementById("hightemp").innerHTML = (responseJSON.at(-1)["highest_temp"]);
+      setTimeout(myFunction, 1000);
 
-      const responseText = await response.text();
-      console.log(responseText); // logs 'OK'
-      document.getElementById("demo").innerHTML = (responseText);
+
     }
+
+
   </script>
 
 </body>
