@@ -1,6 +1,6 @@
 from can_modules.canparse import CANParser
 import serial
-import can
+
 import os
 import pkg_resources
 

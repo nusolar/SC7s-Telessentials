@@ -95,11 +95,15 @@ class HomeFrame(Frame):
         parent.configure(background=BCK_COLOR)
         #all stringvars
         self.speed = StringVar()
-        self.errors = StringVar()
-        self.can_on = StringVar()
-        self.current = StringVar()
-        self.voltage = StringVar()
-        self.lowestV = StringVar()
+        self.bbox_charge = StringVar()
+        self.bbox_avgtemp = StringVar()
+        self.bbox_maxtemp = StringVar()
+        self.mppt_current = StringVar()
+        self.secondaryvolt = StringVar()
+        self.regen_enabled = StringVar()
+        self.odometer = StringVar()
+        self.vehicle_direction = StringVar()
+        self.motorc_temp = StringVar()
 
         self.create_frames(parent)
         self.updater()
@@ -116,7 +120,6 @@ class HomeFrame(Frame):
         #font styles
         info_font = ("Helvetica", 20, "bold")
         vel_font = ("Helvetica", 160, "bold", "italic")
-        gps_font = ("Helvetica", 20, "bold")
 
         #velocity label
         #self.speed = StringVar()
@@ -131,46 +134,74 @@ class HomeFrame(Frame):
         units_label.grid(column=0, row=1, sticky=N, padx=(0, 300))
 
         #gps button
-        gps_btn = Button(self.mainframe, text="GPS", font=gps_font, width=10, height = 2,
-            command= lambda : parent.switchFrame(gps_display.gps_display))
-        gps_btn.grid(column=0, row=2, sticky=SW)
+       
 
 
         #info labels
-        error_label = ttk.Label(self.info_frame, text="Error Status", font=info_font)
-        error_label.grid(column=0, row=0, sticky=W)
-        #self.errors = StringVar()
-        self.errors.set("No active errors")
-        error_status = ttk.Label(self.info_frame, textvariable=self.errors, font=info_font)
-        error_status.grid(column=1, row=0, sticky=E)
+        #battery box charge
+        bbox_charge_label = ttk.Label(self.info_frame, text = "Bbox Charge:", font = info_font)
+        bbox_charge_label.grid(column = 0, row = 0, sticky = W)
+        self.bbox_charge.set(0)
+        bbox_charge_status = ttk.Label(self.info_frame, text = self.bbox_charge, font = info_font)
+        bbox_charge_status.grid(column = 1, row = 0, sticky = E)
 
-        can_label = ttk.Label(self.info_frame, text="CAN Status", font=info_font)
-        can_label.grid(column=0, row=1, sticky=W)
-        #self.can_on = StringVar()
-        self.can_on.set("Connected")
-        can_status = ttk.Label(self.info_frame, textvariable=self.can_on, font=info_font)
-        can_status.grid(column=1, row=1, sticky=E)
+        #batter box average temp
+        bbox_avgtemp_label = ttk.Label(self.info_frame, text = "Bbox Average Temp:", font = info_font)
+        bbox_avgtemp_label.grid(column = 0, row = 1, sticky = W)
+        self.bbox_avgtemp.set(0)
+        bbox_avgtemp_status = ttk.Label(self.info_frame, text = self.bbox_avgtemp, font = info_font)
+        bbox_avgtemp_status.grid(column = 1, row = 1, sticky = E)
 
-        current_label = ttk.Label(self.info_frame, text="Main Current (A)", font=info_font)
-        current_label.grid(column=0, row=2, sticky=W)
-        #self.current = StringVar()
-        self.current.set(0)
-        can_status = ttk.Label(self.info_frame, textvariable=self.current, font=info_font)
-        can_status.grid(column=1, row=2, sticky=E)
+        #battery box max temp
+        bbox_maxtemp_label = ttk.Label(self.info_frame, text = "Bbox Max Temp:", font = info_font)
+        bbox_maxtemp_label.grid(column = 0, row = 2, sticky = W)
+        self.bbox_maxtemp.set(0)
+        bbox_maxtemp_status = ttk.Label(self.info_frame, text = self.bbox_maxtemp, font = info_font)
+        bbox_maxtemp_status.grid(column = 1, row = 2, sticky = E)
 
-        voltage_label = ttk.Label(self.info_frame, text="Main Voltage (V)", font=info_font)
-        voltage_label.grid(column=0, row=3, sticky=W)
-        #self.voltage = StringVar()
-        self.voltage.set(0)
-        voltage_status = ttk.Label(self.info_frame, textvariable=self.voltage, font=info_font)
-        voltage_status.grid(column=1, row=3, sticky=E)
+        #current out from cells
+        mppt_current_label = ttk.Label(self.info_frame, text = "Current out from Cells:", font = info_font)
+        mppt_current_label.grid(column = 0, row = 3, sticky = W)
+        self.mppt_current.set(0)
+        mppt_current_status = ttk.Label(self.info_frame, text = self.mppt_current, font = info_font)
+        mppt_current_status.grid(column = 1, row = 3, sticky = E)
 
-        lowestV_label = ttk.Label(self.info_frame, text="Lowest Voltage (V)", font=info_font)
-        lowestV_label.grid(column=0, row=4, sticky=W)
-        #self.lowestV = StringVar()
-        self.lowestV.set(0)
-        lowestV_status = ttk.Label(self.info_frame, textvariable=self.lowestV, font=info_font)
-        lowestV_status.grid(column=1, row=4, sticky=E)
+        #secondary voltage of battery box
+        secondaryvolt_label = ttk.Label(self.info_frame, text = "Secondary Voltage of Battery Box:", font = info_font)
+        secondaryvolt_label.grid(column = 0, row = 4, sticky = W)
+        self.secondaryvolt.set(0)
+        secondaryvolt_status = ttk.Label(self.info_frame, text = self.secondaryvolt, font = info_font)
+        secondaryvolt_status.grid(column = 1, row = 4, sticky = E)
+
+        #regen enabled?
+        regen_enabled_label = ttk.Label(self.info_frame, text = "Regen Enable?", font = info_font)
+        regen_enabled_label.grid(column = 0, row = 5, sticky = W)
+        self.regen_enabled.set(0)
+        regen_enabled_status = ttk.Label(self.info_frame, text = self.regen_enabled, font = info_font)
+        regen_enabled_status.grid(column = 1, row = 5, sticky = E)
+
+        #distance traveled
+        odometer_label = ttk.Label(self.info_frame, text = "Distance Traveled:", font = info_font)
+        odometer_label.grid(column = 0, row = 6, sticky = W)
+        self.odometer.set(0)
+        odometer_status = ttk.Label(self.info_frame, text = self.odometer, font = info_font)
+        odometer_status.grid(column = 1, row = 6, sticky = E)
+
+        #direction of vehicle
+        vehicle_direction_label = ttk.Label(self.info_frame, text = "Direction of Vehicle:", font = info_font)
+        vehicle_direction_label.grid(column = 0, row = 7, sticky = W)
+        self.vehicle_direction.set(0)
+        vehicle_direction_status = ttk.Label(self.info_frame, text = self.vehicle_direction, font = info_font)
+        vehicle_direction_status.grid(column = 1, row = 7, sticky = E)
+
+        #motor controller temperature
+        motorc_temp_label = ttk.Label(self.info_frame, text = "Motor Controller Temperature:", font = info_font)
+        motorc_temp_label.grid(column = 0, row = 8, sticky = W)
+        self.motorc_temp.set(0)
+        motorc_temp_status = ttk.Label(self.info_frame, text = self.motorc_temp, font = info_font)
+        motorc_temp_status.grid(column = 1, row = 8, sticky = E)
+
+        
 
         #set color
         for child in self.info_frame.winfo_children():
@@ -183,7 +214,7 @@ class HomeFrame(Frame):
         self.mainframe.columnconfigure(0, weight=1)
 
         #space out rows
-        for ii in range(5):
+        for ii in range(9):
             self.info_frame.rowconfigure(ii, weight=1)
 
         self.mainframe.rowconfigure(0, weight=5) #make velocity box biggest
@@ -200,7 +231,7 @@ class HomeFrame(Frame):
     def updater(self):
         if 'MTMP' in displayables:
             self.speed.set(round(displayables['MTMP'], 3))
-        
+        '''
         if 'BVOL' in displayables:
             self.voltage.set(round(displayables['BVOL'], 3))
         
@@ -208,7 +239,7 @@ class HomeFrame(Frame):
             self.errors.set('Active errors!')
         else:
             self.errors.set('No active errors')
-        
+        '''
         self.after(1000, self.updater)
 
 
