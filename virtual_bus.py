@@ -132,14 +132,13 @@ if __name__ == "__main__":
     connection = can_db.connect()
     # 'cantest_data.db'
 
-    #for row in rows:
-    #    can_db.create_tables(connection, row.name, row.signals.items())
+    for row in rows:
+        can_db.create_tables(connection, row.name, row.signals.items())
 
 
 # when testing to make sure 3 tables are created, comment out the row below, and then once we have 3
 # tables working, uncomment and make sure the values go into the correct tables
     while True:
         r = Row.deserialize(queue.get())
-        #print(r.signals.values())
         can_db.add_row(connection, r.timestamp, r.signals.values(), r.name)
         
