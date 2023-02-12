@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: 250px 250px 250px 250px 250px 250px;
+      background-color: #666666;
+      padding: 4px;
+    }
+
+    .grid-title {
+      background-color: #bfbfbf;
+      border: 2px solid #666666;
+      padding: 20px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .grid-item {
+      background-color: #f2f2f2;
+      border: 2px solid #666666;
+      padding: 20px;
+      font-size: 18px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="grid-container" ; style="height: 100px">
+    <div class="grid-title">Main Current</div>
+    <div class="grid-title">MPPT-1</div>
+    <div class="grid-title">MPPT-2</div>
+    <div class="grid-title">RPM</div>
+    <div class="grid-title">Lowest Voltage</div>
+    <div class="grid-title">Highest Temperature</div>
+  </div>
+  <div class="grid-container" ; style="height: 200px">
+    <div class="grid-item" id="current">data</div>
+    <div class="grid-item" id="mppt1">data</div>
+    <div class="grid-item" id="mppt2">data</div>
+    <div class="grid-item"id="rpm">data</div>
+    <div class="grid-item" id="lowvolt">data</div>
+    <div class="grid-item" id="hightemp">data</div>
+  </div>
+
+  <button type="button" onclick="myFunction()">Click Me!</button>
+  <button type="button2" onclick="postfunction()">Post</button>
+  <script>
+    async function myFunction() {
+      const response = await fetch('http://127.0.0.1:8000/messages', {
+      method: "GET",
+      headers: {"Content-type": "application/json; charset=UTF-8"}
+      })
+      
+      const responseJSON = await response.json();
+      console.log(JSON.stringify(responseJSON)); // logs 'OK'
+      document.getElementById("lowvolt").innerHTML = (responseJSON.at(-1)["lowest_voltage"]);
+      document.getElementById("rpm").innerHTML = (responseJSON.at(-1)["rpm"]);
+      document.getElementById("mppt2").innerHTML = (responseJSON.at(-1)["mppt2"]);
+      document.getElementById("mppt1").innerHTML = (responseJSON.at(-1)["mppt1"]);
+      document.getElementById("current").innerHTML = (responseJSON.at(-1)["main_current"]);
+      document.getElementById("hightemp").innerHTML = (responseJSON.at(-1)["highest_temp"]);
+      setTimeout(myFunction, 1000);
+    }
+
+    async function postfunction() {
+      const response = await fetch('http://127.0.0.1:8000/messages', {
+        method: 'POST',
+        headers: {
+          "Accept": "application/json; charset=UTF-8",
+          "Content-type": "application/json; charset=UTF-8"
+        },
+          body: {"main_current":53, "mppt1":104, "mppt2":25, "rpm":88, "lowest_voltage":57, "highest_temp":12}
+    })
+    response.post(response.body)
+    }
+
+
+  </script>
+
+</body>
+
+</html>
