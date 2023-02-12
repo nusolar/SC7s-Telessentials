@@ -14,10 +14,9 @@ from cantools.typechecking import SignalDictType
 #from fastapi import FastAPI
 
 from definitions import PROJECT_ROOT
-from src.can.row import Row
-from src.can.stats import mock_value
-from src.can.util import add_dbc_file
-import src.sql
+from row import Row
+from stats import mock_value
+from util import add_dbc_file
 
 VIRTUAL_BUS_NAME = "virtbus"
 
