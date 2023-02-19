@@ -10,7 +10,8 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",
     "localhost:3000",
-    "http://127.0.0.1:5500"
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5501"
 ]
 
 app.add_middleware(
@@ -20,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+    
 
 # Dependency
 def get_db():
@@ -37,3 +39,17 @@ async def root():
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     messages = crud.get_messages(db, skip=skip, limit=limit)
     return messages
+
+@app.post("/messages/", response_model_exclude_none=schemas.MessageCreate, tags=["messages"])
+def create_message(message: schemas.MessageCreate, db: Session = Depends(get_db)):
+    return crud.create_message(db=db, message=message)
+
+@app.delete("/messages/{id}")
+def delete_message(id: int, db: Session = Depends(get_db)):
+    with db:
+        message = db.get(message, id)
+        if not message:
+            raise HTTPException(status_code=404, detail="message not found")
+        db.delete(message)
+        db.commit()
+        return {"ok": True}

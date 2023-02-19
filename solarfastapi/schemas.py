@@ -11,7 +11,11 @@ class MessageBase(BaseModel):
 
 
 class MessageCreate(MessageBase):
-    pass
+    id: int
+
+    class Config:
+        orm_mode = True
+    
 
 
 class Message(MessageBase):

@@ -48,7 +48,7 @@
   </div>
 
   <button type="button" onclick="myFunction()">Click Me!</button>
-
+  <button type="button2" onclick="postfunction()">Post</button>
   <script>
     async function myFunction() {
       const response = await fetch('http://127.0.0.1:8000/messages', {
@@ -65,10 +65,26 @@
       document.getElementById("current").innerHTML = (responseJSON.at(-1)["main_current"]);
       document.getElementById("hightemp").innerHTML = (responseJSON.at(-1)["highest_temp"]);
       setTimeout(myFunction, 1000);
-
-
     }
 
+    async function postfunction() {
+      const response = await fetch('http://127.0.0.1:8000/messages', {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json; charset=UTF-8',
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({
+                "main_current": 1,
+                "mppt1": 1,
+                "mppt2": 1,
+                "rpm": 1,
+                "lowest_voltage": 1,
+                "highest_temp": 1,
+                "id": 0
+              })          
+    })
+  }
 
   </script>
 
