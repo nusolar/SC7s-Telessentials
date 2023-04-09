@@ -266,16 +266,9 @@ def receiver_worker():
 
 
 def main():
-    #if os.environ.get('DISPLAY', '') == '':
-    #   os.environ.__setitem__('DISPLAY', ':0.0')
-
     # start CAN reciever daemon thread
     recd = threading.Thread(target=receiver_worker, daemon=True)
     recd.start()
-
-    # while True:
-    #     time.sleep(2)
-    #     print(displayables)
 
     root = CarDisplay()
     root.mainloop()
