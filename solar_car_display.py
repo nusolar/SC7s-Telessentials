@@ -1,13 +1,18 @@
-#imports
+from pathlib import Path
+import threading
+
 from tkinter import *
 from tkinter import ttk
 from tkinter import font as tkFont
-import threading
-from can_modules.receiver import Receiver
-import time
-import pkg_resources, os
+import can
+import cantools.database
+from definitions import PROJECT_ROOT
+import serial
 
+interface = 'pican'
 CANUSB_PORT = '/dev/ttyUSB0'
+SERIAL_PORT = "/dev/tty.usbserial-AC00QTXJ"
+SERIAL_BAUD_RATE = 500000
 
 #import gps frame that's in same folder
 import gps_display
@@ -17,27 +22,18 @@ HEIGHT = 300
 BCK_COLOR = "#381b4d" #dark purple
 FG_COLOR = "#ebebeb" #silver
 
-def getTags(tag_filename):
-    tag_dict = {}
-    # Open and read the file.
-    filename = pkg_resources.resource_filename(
-        __name__,
-        os.path.join('resources', tag_filename))
-
-    with open(filename) as f:
-        contents = f.readlines()
-        tags = list(map(lambda d:d.replace('\n', ''), contents))
-        
-        for tag in tags:
-            tag_dict[tag] = 0.0
-        
-        return tag_dict
-
-# CAN names to their values, global because it is accessed by multiple
-# threads. Initialized with the names for the values we choose to display.
-# For now these are dummy values.
-displayables = getTags('mc_tags.txt')
-print(displayables)
+# Displayables
+displayables = {"VehicleVelocity": 0.0, 
+                "bbox_charge": 0.0, 
+                "bbox_avgtemp": 0.0,
+                "bbox_maxtemp": 0.0,
+                "Output_current": 0.0,
+                "secondaryvolt": 0.0,
+                "regen_enabled": 0.0,
+                "Odometer": 0.0,
+                "vehicle_direction": 0.0,
+                "Controller_temperature": 0.0
+}
 
 class CarDisplay(Tk):
     def __init__(self, *args, **kwargs):
@@ -79,7 +75,6 @@ class CarDisplay(Tk):
         #center window
         self.geometry( "%dx%d+%d+%d" % (WIDTH, HEIGHT, self.MyLeftPos, self.myTopPos))
 
-    #when gps button clicked, change frame
     def switchFrame(self, frame_class):
         new_frame = frame_class(self)
         if self._frame is not None:
@@ -133,9 +128,6 @@ class HomeFrame(Frame):
             background=BCK_COLOR, foreground=FG_COLOR)
         units_label.grid(column=0, row=1, sticky=N, padx=(0, 300))
 
-        #gps button
-       
-
 
         #info labels
         #battery box charge
@@ -162,7 +154,7 @@ class HomeFrame(Frame):
         #current out from cells
         mppt_current_label = ttk.Label(self.info_frame, text = "Current out from Cells:", font = info_font)
         mppt_current_label.grid(column = 0, row = 3, sticky = W)
-        self.mppt_current.set(0)
+        self.mppt_current.set("0")
         mppt_current_status = ttk.Label(self.info_frame, text = self.mppt_current, font = info_font)
         mppt_current_status.grid(column = 1, row = 3, sticky = E)
 
@@ -202,7 +194,6 @@ class HomeFrame(Frame):
         motorc_temp_status.grid(column = 1, row = 8, sticky = E)
 
         
-
         #set color
         for child in self.info_frame.winfo_children():
             child.configure(background=BCK_COLOR, foreground=FG_COLOR)
@@ -229,36 +220,51 @@ class HomeFrame(Frame):
 
 
     def updater(self):
-        if 'MTMP' in displayables:
-            self.speed.set(round(displayables['MTMP'], 3))
-        '''
-        if 'BVOL' in displayables:
-            self.voltage.set(round(displayables['BVOL'], 3))
-        
-        if 'EFLA' in displayables and displayables['EFLA'] != 0:
-            self.errors.set('Active errors!')
-        else:
-            self.errors.set('No active errors')
-        '''
+        self.speed.set(round(displayables["VehicleVelocity"], 3))
+        self.bbox_charge.set(round(displayables["bbox_charge"], 3))
+        self.bbox_avgtemp.set(round(displayables["bbox_avgtemp"], 3))
+        self.bbox_maxtemp.set(round(displayables["bbox_maxtemp"], 3))
+        self.mppt_current.set(str(round(displayables["Output_current"], 3)))
+        self.secondaryvolt.set(round(displayables["secondaryvolt"], 3))
+        self.regen_enabled.set(round(displayables["regen_enabled"], 3))
+        self.odometer.set(round(displayables["Odometer"], 3))
+        self.vehicle_direction.set(round(displayables["vehicle_direction"], 3))
+        self.motorc_temp.set(round(displayables["Controller_temperature"], 3))
+
         self.after(1000, self.updater)
 
 
 # Worker function to receive packets off CAN line and
 # update displayables
 def receiver_worker():
-    r = Receiver(serial_port=CANUSB_PORT)
-    for item in r.get_packets():
-        if item['Tag'] in displayables:
-            displayables[item['Tag']] = item['data']
+    db = cantools.database.load_file(Path(PROJECT_ROOT).joinpath("resources").joinpath("mppt.dbc"))
 
-def receiver_worker_from_file():
-    r = Receiver(serial_port=CANUSB_PORT)
-    filename = "example-data/collected_cleaned.txt"
-    for item in r.get_packets_from_file(filename):
-        if item['Tag'] in displayables:
-            displayables[item['Tag']] = item['data']
-            print(displayables)
+    if interface == "canusb":
+        with serial.Serial(SERIAL_PORT, SERIAL_BAUD_RATE) as receiver:
+            while True:
+                raw = receiver.read_until(b';').decode()
+                if len(raw) != 23: continue
+                raw = raw[1:len(raw) - 1]
+                raw = raw.replace('S', '')
+                raw = raw.replace('N', '')
+                tag = int(raw[0:3], 16)
+                data = bytearray.fromhex(raw[3:])
+                msg = can.Message(arbitration_id=tag, data=data)
 
+                for k, v in db.decode_message(msg.arbitration_id, msg.data).items():
+                    if k in displayables:
+                        displayables[k] = v
+                print(displayables)        
+
+    elif interface == "pican":
+        with can.interface.Bus(channel='can0', bustype='socketcan') as bus:  # type: ignore
+            while True:
+                msg = bus.recv()
+                for k, v in db.decode_message(msg.arbitration_id, msg.data).items():
+                    if k in displayables:
+                        displayables[k] = v
+    else:
+        raise Exception('Invalid interface')
 
 
 def main():
@@ -266,7 +272,7 @@ def main():
     #   os.environ.__setitem__('DISPLAY', ':0.0')
 
     # start CAN reciever daemon thread
-    recd = threading.Thread(target=receiver_worker_from_file, daemon=True)
+    recd = threading.Thread(target=receiver_worker, daemon=True)
     recd.start()
 
     # while True:
@@ -276,5 +282,6 @@ def main():
     root = CarDisplay()
     root.mainloop()
 
+    
 if __name__ == '__main__':
     main()
