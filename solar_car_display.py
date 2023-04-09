@@ -9,7 +9,7 @@ import cantools.database
 from definitions import PROJECT_ROOT
 import serial
 
-interface = 'pican'
+interface = 'canusb'
 CANUSB_PORT = '/dev/ttyUSB0'
 SERIAL_PORT = "/dev/tty.usbserial-AC00QTXJ"
 SERIAL_BAUD_RATE = 500000
@@ -89,16 +89,16 @@ class HomeFrame(Frame):
         Frame.__init__(self, parent)
         parent.configure(background=BCK_COLOR)
         #all stringvars
-        self.speed = StringVar()
-        self.bbox_charge = StringVar()
-        self.bbox_avgtemp = StringVar()
-        self.bbox_maxtemp = StringVar()
-        self.mppt_current = StringVar()
-        self.secondaryvolt = StringVar()
-        self.regen_enabled = StringVar()
-        self.odometer = StringVar()
-        self.vehicle_direction = StringVar()
-        self.motorc_temp = StringVar()
+        self.speed = StringVar(value= '0.0')
+        self.bbox_charge = StringVar(value= '0.0')
+        self.bbox_avgtemp = StringVar(value= '0.0')
+        self.bbox_maxtemp = StringVar(value= '0.0')
+        self.mppt_current = StringVar(value= '0.0')
+        self.secondaryvolt = StringVar(value= '0.0')
+        self.regen_enabled = StringVar(value= '0.0')
+        self.odometer = StringVar(value= '0.0')
+        self.vehicle_direction = StringVar(value= '0.0')
+        self.motorc_temp = StringVar(value= '0.0')
 
         self.create_frames(parent)
         self.updater()
@@ -117,8 +117,6 @@ class HomeFrame(Frame):
         vel_font = ("Helvetica", 160, "bold", "italic")
 
         #velocity label
-        #self.speed = StringVar()
-        self.speed.set("0")
         speed_label = ttk.Label(self.mainframe, textvariable=self.speed,
             font=vel_font, background=BCK_COLOR, foreground=FG_COLOR)
         speed_label.grid(column=0, row=0, sticky=S)
@@ -133,64 +131,64 @@ class HomeFrame(Frame):
         #battery box charge
         bbox_charge_label = ttk.Label(self.info_frame, text = "Bbox Charge:", font = info_font)
         bbox_charge_label.grid(column = 0, row = 0, sticky = W)
-        self.bbox_charge.set(0)
-        bbox_charge_status = ttk.Label(self.info_frame, text = self.bbox_charge, font = info_font)
+
+        bbox_charge_status = ttk.Label(self.info_frame, textvariable = self.bbox_charge, font = info_font)
         bbox_charge_status.grid(column = 1, row = 0, sticky = E)
 
         #batter box average temp
         bbox_avgtemp_label = ttk.Label(self.info_frame, text = "Bbox Average Temp:", font = info_font)
         bbox_avgtemp_label.grid(column = 0, row = 1, sticky = W)
-        self.bbox_avgtemp.set(0)
-        bbox_avgtemp_status = ttk.Label(self.info_frame, text = self.bbox_avgtemp, font = info_font)
+
+        bbox_avgtemp_status = ttk.Label(self.info_frame, textvariable = self.bbox_avgtemp, font = info_font)
         bbox_avgtemp_status.grid(column = 1, row = 1, sticky = E)
 
         #battery box max temp
         bbox_maxtemp_label = ttk.Label(self.info_frame, text = "Bbox Max Temp:", font = info_font)
         bbox_maxtemp_label.grid(column = 0, row = 2, sticky = W)
-        self.bbox_maxtemp.set(0)
-        bbox_maxtemp_status = ttk.Label(self.info_frame, text = self.bbox_maxtemp, font = info_font)
+
+        bbox_maxtemp_status = ttk.Label(self.info_frame, textvariable = self.bbox_maxtemp, font = info_font)
         bbox_maxtemp_status.grid(column = 1, row = 2, sticky = E)
 
         #current out from cells
         mppt_current_label = ttk.Label(self.info_frame, text = "Current out from Cells:", font = info_font)
         mppt_current_label.grid(column = 0, row = 3, sticky = W)
-        self.mppt_current.set("0")
-        mppt_current_status = ttk.Label(self.info_frame, text = self.mppt_current, font = info_font)
+
+        mppt_current_status = ttk.Label(self.info_frame, textvariable = self.mppt_current, font = info_font)
         mppt_current_status.grid(column = 1, row = 3, sticky = E)
 
         #secondary voltage of battery box
         secondaryvolt_label = ttk.Label(self.info_frame, text = "Secondary Voltage of Battery Box:", font = info_font)
         secondaryvolt_label.grid(column = 0, row = 4, sticky = W)
-        self.secondaryvolt.set(0)
-        secondaryvolt_status = ttk.Label(self.info_frame, text = self.secondaryvolt, font = info_font)
+
+        secondaryvolt_status = ttk.Label(self.info_frame, textvariable = self.secondaryvolt, font = info_font)
         secondaryvolt_status.grid(column = 1, row = 4, sticky = E)
 
         #regen enabled?
         regen_enabled_label = ttk.Label(self.info_frame, text = "Regen Enable?", font = info_font)
         regen_enabled_label.grid(column = 0, row = 5, sticky = W)
-        self.regen_enabled.set(0)
-        regen_enabled_status = ttk.Label(self.info_frame, text = self.regen_enabled, font = info_font)
+
+        regen_enabled_status = ttk.Label(self.info_frame, textvariable = self.regen_enabled, font = info_font)
         regen_enabled_status.grid(column = 1, row = 5, sticky = E)
 
         #distance traveled
         odometer_label = ttk.Label(self.info_frame, text = "Distance Traveled:", font = info_font)
         odometer_label.grid(column = 0, row = 6, sticky = W)
-        self.odometer.set(0)
-        odometer_status = ttk.Label(self.info_frame, text = self.odometer, font = info_font)
+   
+        odometer_status = ttk.Label(self.info_frame, textvariable = self.odometer, font = info_font)
         odometer_status.grid(column = 1, row = 6, sticky = E)
 
         #direction of vehicle
         vehicle_direction_label = ttk.Label(self.info_frame, text = "Direction of Vehicle:", font = info_font)
         vehicle_direction_label.grid(column = 0, row = 7, sticky = W)
-        self.vehicle_direction.set(0)
-        vehicle_direction_status = ttk.Label(self.info_frame, text = self.vehicle_direction, font = info_font)
+
+        vehicle_direction_status = ttk.Label(self.info_frame, textvariable = self.vehicle_direction, font = info_font)
         vehicle_direction_status.grid(column = 1, row = 7, sticky = E)
 
         #motor controller temperature
         motorc_temp_label = ttk.Label(self.info_frame, text = "Motor Controller Temperature:", font = info_font)
         motorc_temp_label.grid(column = 0, row = 8, sticky = W)
-        self.motorc_temp.set(0)
-        motorc_temp_status = ttk.Label(self.info_frame, text = self.motorc_temp, font = info_font)
+
+        motorc_temp_status = ttk.Label(self.info_frame, textvariable = self.motorc_temp, font = info_font)
         motorc_temp_status.grid(column = 1, row = 8, sticky = E)
 
         
